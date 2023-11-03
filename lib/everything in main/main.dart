@@ -4,7 +4,6 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:logger/logger.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'notification_handler.dart'; // Import the NotificationHandler class
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -48,20 +47,11 @@ void main() async {
 
   _isAndroidPermissionGranted();
 
-  final notificationHandler = NotificationHandler(
-      flutterLocalNotificationsPlugin); // Create a NotificationHandler instance
-
-  runApp(MyApp(notificationHandler: notificationHandler));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final NotificationHandler
-      notificationHandler; // Define the NotificationHandler instance
-
-  const MyApp({Key? key, required this.notificationHandler})
-      : super(
-            key:
-                key); // Modify the constructor to accept the NotificationHandler instance
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -71,38 +61,52 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: MyHomePage(
-          title: 'Flutter Demo Home Page',
-          notificationHandler:
-              notificationHandler), // Pass the NotificationHandler instance to MyHomePage
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  final NotificationHandler
-      notificationHandler; // Define the NotificationHandler instance
-  final String title;
+  const MyHomePage({super.key, required this.title});
 
-  const MyHomePage(
-      {Key? key, required this.title, required this.notificationHandler})
-      : super(
-            key:
-                key); // Modify the constructor to accept the NotificationHandler instance
+  final String title;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  void _sendInstantNotif() {
-    widget.notificationHandler
-        .sendInstantNotif(); // Update the method call to use the NotificationHandler instance
+  void _sendInstantNotif() async {
+    const AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails('your channel id', 'your channel name',
+            channelDescription: 'your channel description',
+            importance: Importance.max,
+            priority: Priority.high,
+            ticker: 'ticker');
+    const NotificationDetails notificationDetails =
+        NotificationDetails(android: androidNotificationDetails);
+    await flutterLocalNotificationsPlugin.show(
+        0, 'plain title', 'plain body', notificationDetails,
+        payload: 'item x');
   }
 
-  void _sendScheduledNotif(int delayInSeconds) {
-    widget.notificationHandler.sendScheduledNotif(
-        delayInSeconds); // Update the method call to use the NotificationHandler instance
+  void _sendScheduledNotif(int delayInSeconds) async {
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+        0,
+        'scheduled title',
+        'scheduled body',
+        tz.TZDateTime.now(tz.local).add(Duration(seconds: delayInSeconds)),
+        const NotificationDetails(
+            android: AndroidNotificationDetails(
+          'your channel id',
+          'your channel name',
+          channelDescription: 'your channel description',
+          priority: Priority.high,
+          importance: Importance.high,
+        )),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime);
   }
 
   @override
