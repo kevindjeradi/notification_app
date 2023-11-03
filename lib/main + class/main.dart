@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:logger/logger.dart';
-import 'package:provider/provider.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'notification_handler.dart'; // Import the NotificationHandler class
@@ -49,26 +48,23 @@ void main() async {
 
   _isAndroidPermissionGranted();
 
-  final notificationHandler =
-      NotificationHandler(flutterLocalNotificationsPlugin);
+  final notificationHandler = NotificationHandler(
+      flutterLocalNotificationsPlugin); // Create a NotificationHandler instance
 
-  runApp(
-    Provider<NotificationHandler>.value(
-      value: notificationHandler,
-      child: const MyApp(),
-    ),
-  );
+  runApp(MyApp(notificationHandler: notificationHandler));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({
-    Key? key,
-  }) : super(key: key);
+  final NotificationHandler
+      notificationHandler; // Define the NotificationHandler instance
+
+  const MyApp({Key? key, required this.notificationHandler})
+      : super(
+            key:
+                key); // Modify the constructor to accept the NotificationHandler instance
 
   @override
   Widget build(BuildContext context) {
-    final notificationHandler = Provider.of<NotificationHandler>(context);
-
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -77,7 +73,8 @@ class MyApp extends StatelessWidget {
       ),
       home: MyHomePage(
           title: 'Flutter Demo Home Page',
-          notificationHandler: notificationHandler),
+          notificationHandler:
+              notificationHandler), // Pass the NotificationHandler instance to MyHomePage
     );
   }
 }
